@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ws
+  name: ws
+spec:
+  replicas: {{ .Values.ws.replicas | default 1 }}
+  selector:
+    matchLabels:
+      app: ws
+  template:
+    metadata:
+      labels:
+        app: ws
+    spec:
+      containers:
+        - image: registry.gitlab.com/web-hook/ws:{{ .Values.ws.tag }}
+          name: ws
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: "128Mi"
+      restartPolicy: Always

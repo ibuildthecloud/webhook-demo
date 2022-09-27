@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: api
+  name: api
+spec:
+  replicas: {{ .Values.api.replicas | default 1 }}
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+        - image: registry.gitlab.com/web-hook/api:{{ .Values.api.tag }}
+          name: api
+          {{- if .Values.db }}
+          {{- if .Values.db.url }}
+          env:
+          - name: MONGODB_URL
+            valueFrom:
+              secretKeyRef:
+                name: mongo
+                key: mongodb_url 
+          {{- end }}
+          {{- end }}
+          imagePullPolicy: Always
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
+      restartPolicy: Always

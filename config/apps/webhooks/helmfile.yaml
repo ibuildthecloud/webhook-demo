@@ -1,0 +1,8 @@
+releases:
+  - name: webhooks
+    namespace: webhooks
+    labels:
+      app: webhooks
+    chart: .
+    values:
+      - values.yaml

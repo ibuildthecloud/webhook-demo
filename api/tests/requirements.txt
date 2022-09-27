@@ -1,0 +1,6 @@
+Werkzeug==2.0.1
+pytest==6.2.1
+pytest-ordering==0.6
+requests==2.25.1
+pymongo[tls,srv]==3.12.0
+nats-python==0.8.0

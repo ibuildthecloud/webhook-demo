@@ -1,0 +1,105 @@
+openapi: 3.0.0
+servers:
+  - description: Local environment
+    url: http://localhost
+  - description: Demo environment
+    url: https://webhooks.app
+tags:
+  - name: Webhooks management
+  - name: Data handling
+  - name: Simple statistics
+info:
+  description: |
+    Interactive documentation to use the Webhooks.app tool
+
+    Because it can be sometimes useful to have access to a webhook from anywhere on the internet,
+    this simple application can be used for tests and demo in only a couple of seconds.
+
+    The flow is really straightforward:
+    - create a webhook and get a new authentication token
+    - reference that webhook (url + auth header) in a tool that uses that alerting medium
+    - check the logs received by the webhook
+    - remove the webhook and all its related data once you are done
+
+    webhooks.app does not connect any applications, it just means to be used to illustrate the payload that are sent by various application using webhooks.
+
+    Definitely useful for demo ;)
+
+  version: "1.0.0"
+  title: Webhooks
+  contact:
+    email: luc.juggery@gmail.com
+paths:
+  "/wh":
+    get:
+      tags:
+        - Webhooks management
+      summary: Define a new webhook and get a unique authentication token
+      responses:
+        "201":
+          description: webhook created
+    delete:
+      tags:
+        - Webhooks management
+      summary: Delete a webhook and all its related content
+      responses:
+        "200":
+          description: webhook deleted
+        "401":
+          description: Invalid token
+      security:
+        - bearerAuth: []
+  "/wh/info":
+    get:
+      tags:
+        - Webhooks management
+      summary: Get info about the current webhook
+      responses:
+        "200":
+          description: information returned
+      security:
+        - bearerAuth: []
+  "/data":
+    post:
+      tags:
+        - Data handling
+      summary: Send json payload
+      requestBody:
+        description: Whatever json payload
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: payload received
+        "401":
+          description: Invalid token
+      security:
+        - bearerAuth: []
+    get:
+      tags:
+        - Data handling
+      summary: Get the timestamped list of payloads received by the webhook
+      responses:
+        "200":
+          description: list of payload received
+        "401":
+          description: Invalid token
+      security:
+        - bearerAuth: []
+  "/stats":
+    get:
+      tags:
+        - Simple statistics
+      summary: Get simple counters
+      responses:
+        "200":
+          description: returns the number of existing webhooks and payloads
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer

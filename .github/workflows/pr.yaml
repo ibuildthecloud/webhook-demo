@@ -1,0 +1,20 @@
+name: On PR
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  publish:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: acorn-io/actions-setup@v1
+      - name: Build
+        run: |
+          set -e
+          acorn build .
+          acorn run . --tests

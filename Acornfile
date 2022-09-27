@@ -1,0 +1,79 @@
+args: {
+    // Run tests
+    tests: false
+}
+
+containers: {
+    api: {
+        build: {
+            context: "./api"
+            if args.dev {
+                dockerfile: "./api/Dockerfile.dev"
+            }
+        }
+        if args.dev {
+            dirs: "/app": "./api/"
+        }
+        probe: "http://localhost:5000/app/healthz"
+        ports: "5000/http"
+        dependsOn: ["nats", "mongo"]
+    }
+
+    ws: {
+        build: "./ws"
+        probes: {}
+        ports: "8080/http"
+        dependsOn: ["nats", "mongo"]
+    }
+
+    mongo: {
+        image: "mongo:4.4"
+        ports: 27017
+        dirs: "/data/db": "mongo-data"
+    }
+
+    nats: {
+        image: "nats:2.8-alpine"
+        ports: 4222
+    }
+
+    swagger:{
+        image: "swaggerapi/swagger-ui:v4.14.0"
+        environment: {
+            BASE_URL: "/docs"
+        }
+        dirs: "/app/swagger.json": "./web-hook/conf/openapi.yaml"
+        ports: "8080/http"
+        dependsOn: ["nats", "mongo"]
+    }
+
+    www: {
+        build: "./www"
+        dependsOn: ["nats", "mongo"]
+        probe: "http://localhost:3000"
+        ports: "3000/http"
+    }
+}
+
+routers: {
+    default: {
+        routes: {
+            "/": "www:3000"
+            "/docs": "swagger:8080"
+            "/ws": "ws:8080"
+            "/wh": "api:5000"
+            "/data": "api:5000"
+            "/stats": "api:5000"
+        }
+    }
+}
+
+if args.tests {
+    jobs: test: {
+        build: {
+            context: "./api"
+            dockerfile: "./api/Dockerfile.test"
+        }
+        dependsOn: ["www", "api", "ws"]
+    }
+}

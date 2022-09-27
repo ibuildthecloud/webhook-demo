@@ -1,0 +1,35 @@
+version: "3"
+services:
+  api:
+    build:
+      context: ../api
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ../api:/app
+    ports:
+      - "5000:5000"
+
+  mongo:
+    image: mongo:4.4
+    expose:
+      - "27017"
+
+  nats:
+    image: nats:2.8-alpine
+    expose:
+      - "4222"
+
+  ws:
+    build: ../ws
+    ports:
+      - "8080:8080"
+  
+  swagger:
+    image: swaggerapi/swagger-ui:v4.14.0
+    environment:
+      - BASE_URL=/docs
+    volumes:
+      - $PWD/conf/openapi.yaml:/app/swagger.json
+    ports:
+      - "8082:8080"
+  

@@ -1,0 +1,61 @@
+variables:
+  CONTAINER_IMAGE: registry.gitlab.com/$CI_PROJECT_PATH
+
+stages:
+  - test
+  - build
+  - release
+  - config
+
+test:
+  stage: test
+  image: docker/compose:latest
+  services:
+    - docker:20.10-dind
+  script:
+    - ./tests.sh
+  allow_failure: true
+  only:
+    - branches
+
+build:
+  stage: build
+  image: jdrouet/docker-with-buildx:20.10.17-0.9.1
+  services:
+    - docker:20.10-dind
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
+    - docker buildx create --use
+    - docker buildx build --platform linux/arm64/v8,linux/amd64 -t $CONTAINER_IMAGE:$CI_COMMIT_TAG -t $CONTAINER_IMAGE:latest . --push
+  only:
+    - tags
+
+update config:
+  stage: config
+  image: lucj/ci:1.0
+  script:
+    - git config --global user.email "devops@webhooks.app"
+    - git config --global user.name "Webhooks DevOps"
+    - git clone --depth 1 https://gitlab-ci-token:${GITLAB_TOKEN}@gitlab.com/web-hook/config.git
+    - cd config
+    - yq -i ".${CI_PROJECT_NAME}.tag=\"${CI_COMMIT_TAG}\"" ./apps/webhooks/values.yaml
+    - git add ./apps/webhooks/values.yaml
+    - cat ./apps/webhooks/values.yaml
+    - git commit -m "Update ${CI_PROJECT_NAME} related tag with $CI_COMMIT_TAG in values.yaml"
+    - git push origin main
+  only:
+    - tags
+
+release:
+  image: node:16
+  stage: release
+  only:
+    refs:
+      - main
+  script:
+    - touch CHANGELOG.md
+    - npm install @semantic-release/gitlab @semantic-release/exec @semantic-release/changelog
+    - npx semantic-release
+  artifacts:
+    paths:
+      - CHANGELOG.md

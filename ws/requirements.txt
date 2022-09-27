@@ -1,0 +1,3 @@
+asyncio-nats-client==0.11.5
+websockets==10.3
+pymongo[tls,srv]==3.11.0

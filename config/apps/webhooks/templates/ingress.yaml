@@ -1,0 +1,30 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: webhook
+spec:
+  entryPoints:
+    - web{{ if .Values.tls }}secure{{ end }}
+  {{- if .Values.tls }}
+  tls: 
+    certResolver: le
+  {{- end }}
+  routes:
+  # Api calls
+  - match: Host(`{{.Values.domain}}`) && (PathPrefix(`/wh`) || PathPrefix(`/data`) || PathPrefix(`/stats`))
+    kind: Rule
+    services:
+    - name: api
+      port: 80
+  # Websocket server
+  - match: Host(`{{.Values.domain}}`) && PathPrefix(`/ws`)
+    kind: Rule
+    services:
+    - name: ws
+      port: 80
+  # Web site
+  - match: Host(`{{.Values.domain}}`)
+    kind: Rule
+    services:
+    - name: www
+      port: 80

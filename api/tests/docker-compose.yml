@@ -1,0 +1,23 @@
+version: "3"
+
+services:
+  test:
+    image: python:3.8-alpine
+    volumes:
+      - .:/app
+    entrypoint: /bin/sh -c
+    command:
+    - cd /app && pip install -r requirements.txt && pytest -s
+
+  api:
+    build:
+      context: ..
+      dockerfile: Dockerfile.dev
+    ports:
+      - 5000:5000
+
+  mongo:
+    image: mongo:4.4
+
+  nats:
+    image: nats:2.3

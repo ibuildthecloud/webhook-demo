@@ -1,0 +1,1 @@
+This service sends update via websocket when it receives event from NATS

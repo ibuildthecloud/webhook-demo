@@ -1,0 +1,74 @@
+version: "3"
+services:
+  traefik:
+    image: "traefik:v2.8"
+    command:
+      # - "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=true"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+      - "9000:9000"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  api:
+    build:
+      context: ../api
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ../api:/app
+    ports:
+      - "5000:5000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`localhost`) && (PathPrefix(`/wh`) || PathPrefix(`/data`) || PathPrefix(`/stats`))"
+      - "traefik.http.routers.api.entrypoints=web"
+
+  mongo:
+    image: mongo:4.4
+    expose:
+      - "4222"
+
+  nats:
+    image: nats:2.8-alpine
+    expose:
+      - "27017"
+
+  ws:
+    build: ../ws
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ws.rule=Host(`localhost`) && PathPrefix(`/ws`)"
+      - "traefik.http.routers.ws.entrypoints=web"
+      - "traefik.http.services.ws.loadbalancer.server.port=8080"
+      - "traefik.http.middlewares.ws.stripprefix.prefixes=/ws"
+    expose:
+      - "8080"
+
+  swagger:
+    image: swaggerapi/swagger-ui:v4.14.0
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.doc.rule=Host(`localhost`) && PathPrefix(`/docs`)"
+      - "traefik.http.routers.doc.entrypoints=web"
+      - "traefik.http.services.doc.loadbalancer.server.port=8080"
+    environment:
+      - BASE_URL=/docs
+    volumes:
+      - $PWD/conf/openapi.yaml:/app/swagger.json
+    ports:
+      - "8082:8080"
+
+  www:
+    build: ../www
+    expose:
+      - "3000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.www.rule=Host(`localhost`)"
+      - "traefik.http.routers.www.entrypoints=web"
+      - "traefik.http.services.www.loadbalancer.server.port=3000"

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: swagger
+data:
+  swagger.json: |-
+{{ .Files.Get "conf/openapi.yaml" | indent 4 }}

@@ -1,0 +1,12 @@
+tls: true
+domain: webhooks.app
+api:
+  tag: v1.0.33
+mongo:
+  tag: 4.4
+nats:
+  tag: 2.8.4-alpine3.15
+ws:
+  tag: v1.0.7
+www:
+  tag: v1.0.36

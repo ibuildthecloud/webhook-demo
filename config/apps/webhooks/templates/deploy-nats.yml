@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nats
+spec:
+  selector:
+    matchLabels:
+      app: nats
+  template:
+    metadata:
+      labels:
+        app: nats
+    spec:
+      containers:
+      - image: nats:{{ .Values.nats.tag }}
+        name: nats
+        ports:
+        - containerPort: 4222
+      restartPolicy: Always

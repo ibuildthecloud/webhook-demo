@@ -1,0 +1,14 @@
+# Configuration options
+additionalArguments:
+  - --accesslog
+  - --certificatesresolvers.le.acme.email={{ requiredEnv "ACME_EMAIL_ADDRESS" }}
+  - --certificatesresolvers.le.acme.storage=/data/acme.json
+  - --certificatesresolvers.le.acme.dnschallenge=true
+  - --certificatesresolvers.le.acme.dnschallenge.provider=cloudflare
+  - --certificatesresolvers.le.acme.dnschallenge.delaybeforecheck=0
+  - --log.level=INFO
+
+# Environment variables to be passed to Traefik
+env:
+  - name: CF_DNS_API_TOKEN
+    value: {{ requiredEnv "CF_DNS_API_TOKEN" }}
