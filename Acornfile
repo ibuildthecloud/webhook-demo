@@ -52,6 +52,10 @@ containers: {
         dependsOn: ["nats", "mongo"]
         probe: "http://localhost:3000"
         ports: "3000/http"
+        if args.dev {
+            command: ["npm", "run", "dev"]
+            dirs: "/app": "./www"
+        }
     }
 }
 
